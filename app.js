@@ -70,7 +70,7 @@ app.get("/initadmin/ifasapp", async (req, res) => {
 
 app.get("/initadmin/ifasapp/api", (req, res) => {
   res.json({
-    message: "Welcome to IFAS API",
+    message: "Welcome to IFAS APIs",
     version: "1.0.0",
     description: "This is the API for IFAS application."
   });
