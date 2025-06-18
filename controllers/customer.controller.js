@@ -1,3 +1,4 @@
+// Controller for managing customers
 const Customer = require("../models/customer.model");
 const moment = require("moment");
 const response = require("../utils/response");
@@ -41,7 +42,7 @@ exports.create = async (req, res) => {
       is_active: req.body.is_active !== undefined ? req.body.is_active : 0,
       app_key: req.body.app_key,
       reg_type_id: req.body.reg_type_id,
-      ad_id: req.user.id, // Set ad_id from req.user
+      ad_id: req.user.id // Set ad_id from req.user
     });
 
     const data = await Customer.create(customer);
@@ -191,13 +192,13 @@ exports.findAll = async (req, res) => {
         from: offset + 1,
         to: offset + customers.length,
         total: totalCount,
-        links,
+        links
       };
     }
 
     res.json(
       response.success("Customers retrieved successfully", customers, {
-        pagination: paginationData,
+        pagination: paginationData
       })
     );
   } catch (err) {
@@ -233,7 +234,7 @@ const createPageLink = (
     ),
     label: label || `${pageNum}`,
     active: pageNum === currentPage,
-    page: pageNum,
+    page: pageNum
   };
 };
 
@@ -252,7 +253,7 @@ const createUrl = (
     items_per_page: limit.toString(),
     sort,
     order,
-    search: encodeURIComponent(search),
+    search: encodeURIComponent(search)
   });
 
   if (filter_ad_id) params.append("filter_ad_id", filter_ad_id);
@@ -321,7 +322,7 @@ exports.update = async (req, res) => {
     "database_name",
     "is_active",
     "app_key",
-    "reg_type_id",
+    "reg_type_id"
   ];
 
   const updateData = {};
@@ -338,7 +339,7 @@ exports.update = async (req, res) => {
     return res.status(400).send({
       message:
         "No valid fields to update. Allowed fields are: " +
-        allowedFields.join(", "),
+        allowedFields.join(", ")
     });
   }
 
@@ -356,7 +357,7 @@ exports.update = async (req, res) => {
     } else {
       console.error("Error in update controller:", err);
       res.status(500).send({
-        message: "Error updating customer with id " + req.params.custId,
+        message: "Error updating customer with id " + req.params.custId
       });
     }
   }
