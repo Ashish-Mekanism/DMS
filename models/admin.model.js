@@ -28,21 +28,25 @@ Admin.findByEmail = async (ad_email) => {
 // Create a new Admin
 Admin.create = async (newAdmin) => {
   try {
-    // Convert all string values in newAdmin to uppercase
     for (const key in newAdmin) {
-      if (typeof newAdmin[key] === 'string' && (newAdmin[key].constructor === String)) {
+      if (
+        key !== "ad_pass" &&
+        typeof newAdmin[key] === "string" &&
+        newAdmin[key].constructor === String
+      ) {
         newAdmin[key] = newAdmin[key].toUpperCase();
       }
     }
 
     const [res] = await db.query("INSERT INTO usr_admin SET ?", newAdmin);
-    // console.log("Created admin: ", { id: res.insertId, ...newAdmin });
     return { id: res.insertId, ...newAdmin };
   } catch (err) {
     console.error("Error creating admin:", err);
     throw err;
   }
 };
+
+
 
 
 
