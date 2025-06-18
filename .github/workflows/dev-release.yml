@@ -7,6 +7,7 @@ on:
 jobs:
   build:
     runs-on: self-hosted
+    timeout-minutes: 10
 
     strategy:
       matrix:
@@ -22,8 +23,11 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
 
-      - name: Install dependencies using npm ci
-        run: npm ci
+      - name: Clean npm cache and install dependencies
+        run: |
+          npm cache clean --force
+          rm -rf node_modules package-lock.json
+          npm install
 
       - name: Setup environment file
         run: |
@@ -33,5 +37,5 @@ jobs:
       - name: Restart app with PM2
         run: |
           pm2 delete all || true
-          pm2 start index.js --name DMS-BE
+          pm2 start app.js --name DMS-BE
           pm2 save
