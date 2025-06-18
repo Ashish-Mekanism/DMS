@@ -33,5 +33,5 @@ jobs:
       - name: Restart app with PM2
         run: |
           pm2 delete all || true
-          pm2 start index.js --name DMS-BE
+          pm2 start app.js --name DMS-BE
           pm2 save
