@@ -1,3 +1,4 @@
+// Controllers for managing admin users in the application
 const Admin = require("../models/admin.model");
 const response = require("../utils/response");
 const bcrypt = require("bcryptjs");
@@ -43,7 +44,7 @@ exports.sendAdminOTP = async (req, res) => {
       {
         id: adminUser.ad_id,
         phone: adminUser.ad_phone,
-        name: adminUser.ad_name,
+        name: adminUser.ad_name
       },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
@@ -53,7 +54,7 @@ exports.sendAdminOTP = async (req, res) => {
     const responseObj = {
       ...apiResponse.data,
       generatedOTP: otp,
-      token: token,
+      token: token
     };
 
     return res.json(responseObj);
@@ -85,7 +86,7 @@ exports.Login = async (req, res) => {
       { id: admin.ad_id, name: admin.ad_name },
       process.env.JWT_SECRET,
       {
-        expiresIn: 259200, // 3 days in seconds (3 * 24 * 60 * 60)
+        expiresIn: 259200 // 3 days in seconds (3 * 24 * 60 * 60)
       }
     );
 
@@ -94,7 +95,7 @@ exports.Login = async (req, res) => {
         id: admin.ad_id,
         name: admin.ad_name,
         email: admin.ad_email,
-        accessToken: token,
+        accessToken: token
       })
     );
   } catch (err) {
@@ -119,7 +120,7 @@ exports.create = async (req, res) => {
       ad_delete: req.body.ad_delete,
       ad_type: req.body.ad_type,
       ad_id: req.body.ad_id, // Optional: pass only if not auto-increment
-      ad_phone: req.body.ad_phone,
+      ad_phone: req.body.ad_phone
     });
 
     const data = await Admin.create(admin);
@@ -135,19 +136,18 @@ exports.create = async (req, res) => {
   }
 };
 
-
 exports.findAll = async (req, res) => {
   try {
     const data = await Admin.getAll();
     res.json({
       success: true,
       message: "Admins retrieved successfully",
-      data: data,
+      data: data
     });
   } catch (err) {
     res.status(500).json({
       success: false,
-      message: err.message || "Some error occurred while retrieving admins.",
+      message: err.message || "Some error occurred while retrieving admins."
     });
   }
 };
@@ -242,7 +242,7 @@ exports.getAdminDetailsByToken = async (req, res) => {
         id: admin.ad_id,
         name: admin.ad_name,
         email: admin.ad_email,
-        type: admin.ad_type,
+        type: admin.ad_type
       })
     );
   } catch (error) {
