@@ -3,22 +3,20 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const app = express();
-require("./utils/emailService");
-require("./utils/whatsappService");
+require('./utils/emailService');
+require('./utils/whatsappService');
+
 
 // Use the CORS middleware without any configuration to allow all origins
 app.use(cors());
 
 // Handling preflight requests
-app.options(
-  "*",
-  cors({
-    origin: "*",
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    preflightContinue: false,
-    optionsSuccessStatus: 204
-  })
-);
+app.options('*', cors({
+  origin: "*",
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  preflightContinue: false,
+  optionsSuccessStatus: 204
+}));
 
 // Parse requests of content-type: application/json
 app.use(bodyParser.json());
@@ -56,28 +54,20 @@ app.use("/initadmin/ifasapp/api/gstSystems", gstSystemroutes);
 
 // Default route
 app.get("/initadmin/ifasapp", async (req, res) => {
-  db.sqlConnection.getConnection(function async(err, connection) {
-    if (err) {
-      res.send("error");
-    } else {
-      connection.query("select * from CUS_MAST", function (err, result) {
-        if (err) res.json({ message: err });
-        res.json({ Result: result });
-      });
-    }
-  });
-});
+    db.sqlConnection.getConnection (function async (err, connection ) {
+     if (err) {res.send("error") } 
+     else {
+        connection.query('select * from CUS_MAST', function (err, result) {
+            if (err) res.json({message: err});
+            res.json({Result:  result});
+          });
+     }
+   });
 
-app.get("/initadmin/ifasapp/api", (req, res) => {
-  res.json({
-    message: "Welcome to IFAS APIs",
-    version: "1.0.0",
-    description: "This is the API for IFAS application."
-  });
 });
 
 // Set port, listen for requests
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, "0.0.0.0", () => {
+app.listen(PORT,"0.0.0.0", () => {
   console.log(`Server is running on port ${PORT}.`);
 });
