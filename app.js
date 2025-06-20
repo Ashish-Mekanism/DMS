@@ -52,6 +52,16 @@ app.use("/initadmin/ifasapp/api/UserSubscription", UserSubscriptionroutes);
 app.use("/initadmin/ifasapp/api/UserMaster", UserMasterroutes);
 app.use("/initadmin/ifasapp/api/gstSystems", gstSystemroutes);
 
+// Health check endpoint
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "OK",
+    message: "DMS Backend is running",
+    timestamp: new Date().toISOString(),
+    port: process.env.PORT || 3000
+  });
+});
+
 // Default route
 app.get("/initadmin/ifasapp", async (req, res) => {
     db.sqlConnection.getConnection (function async (err, connection ) {
