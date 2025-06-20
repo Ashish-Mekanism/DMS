@@ -1,3 +1,4 @@
+// this file is part of the Employee Management System API
 const Employee = require("../models/employee.model");
 const response = require("../utils/response");
 const moment = require("moment");
@@ -35,7 +36,7 @@ exports.create = async (req, res) => {
       SALE_ORDER_ENTRY: req.body.SALE_ORDER_ENTRY,
       SALE_REPORT_ACTIVE: req.body.SALE_REPORT_ACTIVE,
       PURCHASE_REPORT_ACTIVE: req.body.PURCHASE_REPORT_ACTIVE,
-      LEDGER_REPORT_ACTIVE: req.body.LEDGER_REPORT_ACTIVE,
+      LEDGER_REPORT_ACTIVE: req.body.LEDGER_REPORT_ACTIVE
     });
 
     const data = await Employee.create(employee);
@@ -186,13 +187,13 @@ exports.findAll = async (req, res) => {
         from: offset + 1,
         to: offset + employees.length,
         total: totalCount,
-        links,
+        links
       };
     }
 
     res.json(
       response.success("Employees retrieved successfully", employees, {
-        pagination: paginationData,
+        pagination: paginationData
       })
     );
   } catch (err) {
@@ -228,7 +229,7 @@ const createPageLink = (
     ),
     label: label || `${pageNum}`,
     active: pageNum === currentPage,
-    page: pageNum,
+    page: pageNum
   };
 };
 
@@ -247,7 +248,7 @@ const createUrl = (
     items_per_page: limit.toString(),
     sort,
     order,
-    search: encodeURIComponent(search),
+    search: encodeURIComponent(search)
   });
 
   if (filter_ad_id) params.append("filter_ad_id", filter_ad_id);
@@ -282,9 +283,9 @@ exports.findOne = async (req, res) => {
     const sort = req.query.sort || "EMP_CODE";
     const order = req.query.order || "ASC";
 
-     const filter_ad_id = req.query.filter_ad_id || null;
-     const filter_from = req.query.filter_from || null;
-     const filter_to = req.query.filter_to || null;
+    const filter_ad_id = req.query.filter_ad_id || null;
+    const filter_from = req.query.filter_from || null;
+    const filter_to = req.query.filter_to || null;
 
     const [employees, totalCount] = await Employee.findByMultipleCriteria(
       limit,
@@ -292,9 +293,9 @@ exports.findOne = async (req, res) => {
       sort,
       order,
       search,
-      filter_ad_id, 
-      filter_from, 
-      filter_to, 
+      filter_ad_id,
+      filter_from,
+      filter_to,
       empId // searchId
     );
 
@@ -311,7 +312,6 @@ exports.findOne = async (req, res) => {
       );
   } catch (err) {
     console.error(`Error retrieving employee(s):`, err);
-    
   }
 };
 
