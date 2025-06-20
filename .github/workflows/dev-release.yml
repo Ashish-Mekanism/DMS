@@ -94,36 +94,26 @@ jobs:
           pm2 save
           sleep 5
           pm2 list
-          pm2 logs DMS-BE --lines 10
         timeout-minutes: 3
 
       - name: Verify deployment
         run: |
           echo "Waiting for application to start..."
-          sleep 20
+          sleep 15
           echo "Checking PM2 status..."
           pm2 list
-          echo "Checking recent application logs..."
-          pm2 logs DMS-BE --lines 5 --nostream || true
           echo "Testing application health..."
           
-          # Test health endpoint first
+          # Quick health check without hanging
           if curl -f -s http://localhost:3000/health; then
             echo ""
             echo "✅ Application health check passed!"
-          elif curl -f -s http://localhost:3000/initadmin/ifasapp > /dev/null; then
-            echo "✅ Application main endpoint responding!"
           elif netstat -tlnp | grep :3000; then
             echo "✅ Application is listening on port 3000!"
-            echo "⚠️ App is running but endpoints may need configuration."
           else
             echo "❌ Application not responding"
-            echo "Detailed PM2 logs:"
-            pm2 logs DMS-BE --lines 20 --nostream || true
-            echo "Process status:"
-            ps aux | grep node || true
             exit 1
           fi
           
-          echo "🎉 Deployment verification completed successfully!"
-        timeout-minutes: 3
+          echo "🎉 Deployment completed successfully!"
+        timeout-minutes: 2
