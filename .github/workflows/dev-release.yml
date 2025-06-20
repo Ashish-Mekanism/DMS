@@ -7,7 +7,7 @@ on:
 jobs:
   build:
     runs-on: [self-hosted, linux]
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     strategy:
       matrix:
@@ -26,23 +26,21 @@ jobs:
       - name: Cache dependencies
         uses: actions/cache@v3
         with:
-          path: |
-            **/node_modules
-            ~/.npm
+          path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - name: Install global packages and stop PM2
+      - name: Install global packages and manage PM2
         run: |
-          npm install -g yarn pm2
+          npm install -g pm2 --silent
           pm2 stop all || true
+        timeout-minutes: 3
 
-      - name: Clean npm cache and install dependencies
+      - name: Install dependencies
         run: |
-          npm cache clean --force
-          rm -rf node_modules package-lock.json
-          npm install
+          npm ci --prefer-offline --no-audit
+        timeout-minutes: 5
 
       - name: Setup environment file
         run: |
