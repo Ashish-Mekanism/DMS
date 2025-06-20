@@ -39,8 +39,11 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm ci --prefer-offline --no-audit
-        timeout-minutes: 5
+          npm cache clean --force
+          rm -rf node_modules package-lock.json
+          npm install
+          npm audit fix --force
+        timeout-minutes: 8
 
       - name: Setup environment file
         run: |
@@ -66,8 +69,12 @@ jobs:
       - name: Verify deployment
         run: |
           echo "Waiting for application to start..."
-          sleep 10
-          echo "Checking if application is responding..."
-          curl -f http://localhost:3000/initadmin/ifasapp || exit 1
+          sleep 15
+          echo "Checking PM2 status..."
+          pm2 list
+          echo "Checking application logs for errors..."
+          pm2 logs DMS-BE --lines 5 --nostream
+          echo "Testing if application is responding on port 3000..."
+          curl -f http://localhost:3000/initadmin/ifasapp || (echo "❌ Application not responding" && pm2 logs DMS-BE --lines 20 --nostream && exit 1)
           echo "✅ Application is running and responding!"
-        timeout-minutes: 2
+        timeout-minutes: 3
