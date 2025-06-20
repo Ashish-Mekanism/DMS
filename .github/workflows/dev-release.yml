@@ -33,17 +33,48 @@ jobs:
 
       - name: Install global packages and manage PM2
         run: |
-          npm install -g pm2 --silent
+          echo "Installing PM2 globally with retries..."
+          npm install -g pm2 --silent --no-optional || npm install -g pm2 --silent --force
+          echo "Stopping existing PM2 processes..."
           pm2 stop all || true
-        timeout-minutes: 3
+          pm2 delete all || true
+        timeout-minutes: 5
 
       - name: Install dependencies
         run: |
-          npm cache clean --force
-          rm -rf node_modules package-lock.json
-          npm install
-          npm audit fix --force
-        timeout-minutes: 8
+          echo "Setting npm configuration for better reliability..."
+          npm config set fetch-retry-mintimeout 20000
+          npm config set fetch-retry-maxtimeout 120000
+          npm config set fetch-retries 5
+          npm config set registry https://registry.npmjs.org/
+          
+          echo "Installing dependencies with retries..."
+          for i in {1..3}; do
+            echo "Attempt $i of 3..."
+            if npm ci --prefer-offline --no-optional; then
+              echo "✅ Dependencies installed successfully!"
+              break
+            elif [ $i -eq 3 ]; then
+              echo "❌ Failed after 3 attempts, trying full clean install..."
+              rm -rf node_modules package-lock.json
+              npm install --no-optional --prefer-offline
+            else
+              echo "⚠️ Attempt $i failed, retrying in 10 seconds..."
+              sleep 10
+            fi
+          done
+        timeout-minutes: 10
+
+      - name: Verify dependencies
+        run: |
+          echo "Verifying installed packages..."
+          npm list --depth=0 || echo "Some packages may have issues, but continuing..."
+          echo "Checking critical dependencies..."
+          node -e "console.log('✅ Node.js is working')"
+          node -e "require('express'); console.log('✅ Express is available')"
+          node -e "require('mysql2'); console.log('✅ MySQL2 is available')"
+          node -e "require('dotenv'); console.log('✅ Dotenv is available')"
+        timeout-minutes: 2
 
       - name: Setup environment file
         run: |
