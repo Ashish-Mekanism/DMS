@@ -58,4 +58,16 @@ jobs:
           pm2 delete all || true
           pm2 start app.js --name DMS-BE
           pm2 save
-          pm2 restart all
+          sleep 5
+          pm2 list
+          pm2 logs DMS-BE --lines 10
+        timeout-minutes: 3
+
+      - name: Verify deployment
+        run: |
+          echo "Waiting for application to start..."
+          sleep 10
+          echo "Checking if application is responding..."
+          curl -f http://localhost:3000/initadmin/ifasapp || exit 1
+          echo "✅ Application is running and responding!"
+        timeout-minutes: 2
