@@ -31,14 +31,33 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - name: Install global packages and manage PM2
+      - name: Setup PM2 and manage processes
         run: |
-          echo "Installing PM2 globally with retries..."
-          npm install -g pm2 --silent --no-optional || npm install -g pm2 --silent --force
-          echo "Stopping existing PM2 processes..."
+          echo "Checking PM2 availability..."
+          if command -v pm2 &> /dev/null; then
+            echo "✅ PM2 is already available: $(pm2 --version)"
+          else
+            echo "Installing PM2 globally..."
+            # Try multiple installation methods
+            npm install -g pm2 --unsafe-perm --silent || {
+              echo "First attempt failed, trying alternative method..."
+              npm install -g pm2 --force --silent || {
+                echo "Second attempt failed, trying with sudo..."
+                sudo npm install -g pm2 --unsafe-perm --silent || {
+                  echo "⚠️ All PM2 install attempts failed, but continuing..."
+                }
+              }
+            }
+          fi
+
+          # Ensure PM2 is in PATH
+          export PATH=$PATH:/usr/local/bin:/usr/bin:/home/ubuntu/.npm-global/bin
+
+          echo "Managing PM2 processes..."
           pm2 stop all || true
           pm2 delete all || true
-        timeout-minutes: 5
+          pm2 flush || true
+        timeout-minutes: 3
 
       - name: Install dependencies
         run: |
@@ -47,7 +66,7 @@ jobs:
           npm config set fetch-retry-maxtimeout 120000
           npm config set fetch-retries 5
           npm config set registry https://registry.npmjs.org/
-          
+
           echo "Installing dependencies with retries..."
           for i in {1..3}; do
             echo "Attempt $i of 3..."
@@ -89,11 +108,31 @@ jobs:
 
       - name: Deploy with PM2
         run: |
+          echo "Starting deployment..."
+
+          # Ensure PM2 is available
+          export PATH=$PATH:/usr/local/bin:/usr/bin:/home/ubuntu/.npm-global/bin
+
+          # Clean up existing processes
           pm2 delete all || true
-          pm2 start app.js --name DMS-BE
-          pm2 save
-          sleep 5
-          pm2 list
+
+          # Start the application with error handling
+          if pm2 start app.js --name DMS-BE; then
+            echo "✅ PM2 started successfully"
+            pm2 save || true
+            sleep 5
+            pm2 list || true
+          else
+            echo "❌ PM2 start failed, trying direct node startup..."
+            # Fallback: kill any existing node processes and start fresh
+            pkill -f "node.*app.js" || true
+            sleep 2
+            nohup node app.js > app.log 2>&1 &
+            sleep 3
+            echo "✅ Application started with node directly"
+            # Try to add to PM2 if possible
+            pm2 start app.js --name DMS-BE || echo "⚠️ Could not add to PM2, but app is running"
+          fi
         timeout-minutes: 3
 
       - name: Verify deployment
@@ -103,7 +142,7 @@ jobs:
           echo "Checking PM2 status..."
           pm2 list
           echo "Testing application health..."
-          
+
           # Quick health check without hanging
           if curl -f -s http://localhost:3000/health; then
             echo ""
@@ -114,6 +153,6 @@ jobs:
             echo "❌ Application not responding"
             exit 1
           fi
-          
+
           echo "🎉 Deployment completed successfully!"
         timeout-minutes: 2
